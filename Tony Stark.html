@@ -1,0 +1,283 @@
+
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stark Industries | Definitive Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --iron-red: #b31b1b;
+            --iron-gold: #ffdf00;
+            --arc-blue: #00d4ff;
+            --dark-bg: #050505;
+            --card-bg: rgba(15, 15, 15, 0.98);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        html { scroll-padding-top: 70px; } /* Previne ascunderea titlurilor sub meniu */
+        body { background-color: var(--dark-bg); color: #f0f0f0; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+        h1, h2, h3 { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; }
+
+        /* HUD Overlay */
+        .hud-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 999;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+            background-size: 100% 4px;
+        }
+
+        /* Meniu de Navigație (Scurtături) */
+        .nav-menu {
+            position: fixed;
+            top: 0; width: 100%;
+            background: rgba(5, 5, 5, 0.85);
+            border-bottom: 1px solid var(--arc-blue);
+            z-index: 1001;
+            display: flex;
+            justify-content: center;
+            padding: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+        .nav-btn {
+            color: #ccc;
+            text-decoration: none;
+            margin: 0 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            padding: 8px 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .nav-btn:hover {
+            color: var(--arc-blue);
+            border-color: var(--arc-blue);
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Hero */
+        .hero {
+            height: 60vh; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; background: radial-gradient(circle, #111 0%, #000 100%);
+            text-align: center; border-bottom: 2px solid var(--iron-red); margin-top: 60px;
+        }
+        .arc-reactor {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 2px solid var(--arc-blue); box-shadow: 0 0 20px var(--arc-blue);
+            margin-bottom: 15px; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* About Section */
+        .about-section { padding: 80px 10%; background: #080808; }
+        .about-card { background: var(--card-bg); padding: 50px; border-radius: 15px; border: 1px solid #222; border-top: 4px solid var(--iron-gold); }
+        .about-text { column-count: 2; column-gap: 40px; line-height: 1.8; color: #ccc; text-align: justify; font-size: 1.05rem; }
+        .about-text p { margin-bottom: 20px; }
+        .highlight { color: var(--arc-blue); font-weight: bold; }
+
+        /* Battles Section */
+        .battles-section { padding: 60px 5%; }
+        .battle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 30px; }
+        .battle-card { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #222; transition: 0.3s; }
+        .battle-card:hover { transform: scale(1.02); border-color: var(--arc-blue); }
+        .battle-img { width: 100%; height: 200px; background-size: cover; background-position: center; }
+        .battle-info { padding: 20px; }
+        .battle-info h3 { color: var(--iron-gold); margin-bottom: 10px; font-size: 1.1rem; }
+
+        /* Armor Section */
+        .armor-section { padding: 80px 5%; background: #0a0a0a; }
+        .armor-card { 
+            display: flex; align-items: center; gap: 40px; margin-bottom: 60px;
+            background: rgba(20,20,20,0.9); padding: 30px; border-radius: 20px; border: 1px solid #333;
+        }
+        .armor-card:nth-child(even) { flex-direction: row-reverse; }
+        .armor-img-large { flex: 1; height: 450px; background-size: cover; background-position: center; border-radius: 15px; }
+        .armor-info { flex: 1; }
+
+        /* Stats Bars & Extra Info */
+        .stat-row { margin-bottom: 12px; }
+        .stat-label { font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .stat-bar { height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+        .stat-fill { height: 100%; background: var(--arc-blue); border-radius: 3px; }
+        
+        .armor-extra-info { 
+            margin-top: 25px; padding-top: 15px; border-top: 1px dashed #333; 
+            font-size: 0.95rem; color: #aaa; line-height: 1.6; font-style: italic;
+        }
+
+        @media (max-width: 950px) {
+            .about-text { column-count: 1; }
+            .armor-card, .armor-card:nth-child(even) { flex-direction: column; }
+            .armor-img-large { width: 100%; height: 300px; }
+        }
+
+        @media (max-width: 600px) {
+            .nav-menu { flex-wrap: wrap; padding: 10px; }
+            .nav-btn { margin: 5px; font-size: 0.75rem; padding: 6px 12px;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hud-overlay"></div>
+
+    <nav class="nav-menu">
+        <a href="#hero" class="nav-btn">Sistem Principal</a>
+        <a href="#despre" class="nav-btn">Dosar Stark</a>
+        <a href="#batalii" class="nav-btn">Bătălii Mem.</a>
+        <a href="#armuri" class="nav-btn">Arhivă Armuri</a>
+    </nav>
+
+    <section class="hero" id="hero">
+        <div class="arc-reactor"></div>
+        <h1 style="font-size: 3rem;">LEGACY OF STARK</h1>
+        <p style="color: var(--arc-blue); letter-spacing: 3px;">DATABASE VERSION 9.0</p>
+    </section>
+
+    <section class="about-section" id="despre">
+        <div class="about-card reveal">
+            <h2 style="color: var(--iron-gold); margin-bottom: 30px; text-align: center;">Profil Complet: Anthony Stark</h2>
+            <div class="about-text">
+                <p>Anthony Edward "Tony" Stark s-a născut pe 29 mai 1970, fiind fiul legendarului Howard Stark. Încă din fragedă pruncie, a manifestat o inteligență de neegalat, asamblând prima placă de circuit la vârsta de 4 ani și primul său motor de rachetă la 6 ani. Absolvirea <span class="highlight">MIT la vârsta de 17 ani</span> ca șef de promoție a confirmat statutul său de cel mai strălucit geniu al generației sale.</p>
+                
+                <p>Moartea părinților săi într-un accident l-a lăsat pe Tony la cârma imperiului <span class="highlight">Stark Industries</span> la doar 21 de ani. Timp de decenii, el a fost fața industriei de apărare a SUA, creând tehnologii care au dominat câmpul de luptă, până când un incident tragic în Afganistan l-a forțat să privească realitatea brutală a creațiilor sale.</p>
+
+                <p>Captivitatea sa a fost punctul de cotitură. Folosind doar resturi metalice și o voință de fier, el a inventat <span class="highlight">Reactorul Arc</span>, o sursă de energie curată care inițial a servit doar pentru a-i ține inima bătând. Această invenție nu a alimentat doar armura Mark I, ci a devenit simbolul speranței pentru o lume fără dependență de combustibili fosili sau arme de distrugere masivă.</p>
+
+                <p>Tony Stark a trecut printr-o evoluție psihologică profundă, luptându-se cu stresul post-traumatic după bătălia din New York. Această anxietate l-a împins să creeze <span class="highlight">Legiunea de Fier</span> și, ulterior, inteligența artificială Ultron, o greșeală care a dus la distrugerea Sokoviei. Această eroare l-a marcat, determinându-l să accepte Acordurile Sokovia pentru a limita puterea necontrolată a super-eroilor.</p>
+
+                <p>Relația sa cu <span class="highlight">Pepper Potts</span> a fost singura sa ancoră în realitate, transformându-l dintr-un playboy egocentric într-un tată devotat și un soț iubitor. În ultimii săi ani, a devenit mentorul lui Peter Parker, văzând în tânărul Om-Păianjen potențialul de a fi mai bun decât a fost el însuși vreodată.</p>
+
+                <p>Tehnologia sa a evoluat de la plăci groase de oțel la <span class="highlight">nanotehnologie moleculară</span> capabilă să se reconfigureze în milisecunde. Tony a reușit să descopere un nou element chimic și a perfecționat călătoria în timp prin GPS-ul spațio-temporal. Sacrificiul său final a fost dovada supremă că sub armura rece se afla o inimă dispusă să dea totul pentru viitorul umanității.</p>
+                
+                <p>Moștenirea sa continuă prin tehnologiile lăsate în urmă și prin fundația "Stark Relief", care ajută victimele conflictelor globale. Tony a demonstrat că adevăratul erou nu este definit de puteri supranaturale, ci de <span class="highlight">capacitatea de a învăța din eșecuri</span> și de a evolua constant pentru binele comun. "Eu sunt Iron Man" nu a fost doar o replică, ci un angajament de a proteja lumea cu orice preț.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="battles-section" id="batalii">
+        <h2 style="text-align: center; margin-bottom: 40px; font-size: 2rem;">DOSARE DE LUPTĂ</h2>
+        <div class="battle-grid">
+            <div class="battle-card reveal">
+                <div class="battle-img" style="background-image: url('https://www.screengeek.net/wp-content/uploads/2016/11/maxresdefault-1.jpg');"></div>
+                <div class="battle-info">
+                    <div style="color:var(--arc-blue); font-size: 0.8rem;">NEW YORK - 2012</div>
+                    <h3>INVAZIA CHITAURI</h3>
+                    <p>Primul contact cu o amenințare extraterestră masivă.</p>
+                </div>
+            </div>
+            <div class="battle-card reveal">
+                <div class="battle-img" style="background-image: url('https://static0.srcdn.com/wordpress/wp-content/uploads/2020/11/The-incredible-Hulk-Iron-Man-Avengers-Age-of-Ultron-.jpg');"></div>
+                <div class="battle-info">
+                    <div style="color:var(--arc-blue); font-size: 0.8rem;">SOKOVIA - 2015</div>
+                    <h3>IRON MAN VS HULK</h3>
+                    <p>Utilizarea protocolului Hulkbuster (Veronica) pentru a reține amenințarea Gamma.</p>
+                </div>
+            </div>
+            <div class="battle-card reveal">
+                <div class="battle-img" style="background-image: url('https://wallpapers.com/images/featured/iron-man-vs-thanos-ugphj7h6kq4hdg9t.jpg');"></div>
+                <div class="battle-info">
+                    <div style="color:var(--arc-blue); font-size: 0.8rem;">TITAN - 2018</div>
+                    <h3>DUELUL CU THANOS</h3>
+                    <p>O demonstrație de măiestrie nanotehnologică într-o luptă 1 la 1 cu Titanul.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="armor-section" id="armuri">
+        <h2 style="text-align: center; margin-bottom: 50px; font-size: 2rem;">SISTEME DE ARMURĂ</h2>
+
+        <div class="armor-card reveal">
+            <div class="armor-img-large" style="background-image: url('https://res.cloudinary.com/jerrick/image/upload/d_642250b563292b35f27461a7.png,f_jpg,q_auto,w_720/60925506f25ccd001d061dd9.png');"></div>
+            <div class="armor-info">
+                <h3>MARK I</h3>
+                <div class="stat-row">
+                    <div class="stat-label">FORȚĂ BRUTĂ <span>50%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 50%;"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">AGILITATE <span>10%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 10%; background: var(--iron-red);"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">BLINDAJ <span>70%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 70%; background: #555;"></div></div>
+                </div>
+                <div class="armor-extra-info">
+                    Construită în secret într-o peșteră din Afganistan folosind doar piese de rachete recuperate. Deși avea un blindaj rudimentar din fier și o manevrabilitate aproape inexistentă, aruncătoarele de flăcări integrate și forța hidraulică i-au permis lui Tony să evadeze și să rescrie istoria.
+                </div>
+            </div>
+        </div>
+
+        <div class="armor-card reveal">
+            <div class="armor-img-large" style="background-image: url('https://res.cloudinary.com/jerrick/image/upload/d_642250b563292b35f27461a7.png,f_jpg,q_auto,w_720/61113f85754aa9001d9eef8d.png');"></div>
+            <div class="armor-info">
+                <h3>MARK V</h3>
+                <div class="stat-row">
+                    <div class="stat-label">FORȚĂ BRUTĂ <span>45%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 45%;"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">AGILITATE <span>90%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 90%; background: var(--iron-red);"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">BLINDAJ <span>40%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 40%; background: #555;"></div></div>
+                </div>
+                <div class="armor-extra-info">
+                    Cunoscută sub numele de "Suitcase Armor", Mark V a revoluționat portabilitatea fiind prima armură de urgență. Designul său modular și retractabil a sacrificat o parte din blindajul greu și armamentul complex pentru capacitatea de a fi transportată oriunde sub forma unei simple serviete.
+                </div>
+            </div>
+        </div>
+
+        <div class="armor-card reveal">
+            <div class="armor-img-large" style="background-image: url('https://res.cloudinary.com/jerrick/image/upload/d_642250b563292b35f27461a7.png,f_jpg,q_auto,w_720/6117620d192275001ed485b3.png');"></div>
+            <div class="armor-info">
+                <h3>MARK LXXXV</h3>
+                <div class="stat-row">
+                    <div class="stat-label">FORȚĂ BRUTĂ <span>100%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 100%;"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">AGILITATE <span>95%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 95%; background: var(--iron-red);"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">BLINDAJ NANOTECH <span>98%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 98%; background: #555;"></div></div>
+                </div>
+                <div class="armor-extra-info">
+                    Apogeul ingineriei Stark. Această capodoperă folosește nanotehnologie fluidă care se adaptează instantaneu la intențiile utilizatorului, generând arme, scuturi sau propulsoare din nimic. A fost singura armură capabilă să canalizeze și să reziste puterii absolute a celor șase Pietre ale Infinitului.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="padding: 40px; text-align: center; opacity: 0.5;">
+        <p>&copy; 2026 STARK INDUSTRIES - Jarvis System v9.0</p>
+    </footer>
+
+    <script>
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            reveals.forEach(el => {
+                var windowHeight = window.innerHeight;
+                var elementTop = el.getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) { el.classList.add("active"); }
+            });
+        }
+        window.addEventListener("scroll", reveal);
+        window.onload = reveal;
+    </script>
+</body>
+</html>
